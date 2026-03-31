@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 能力学习进度 - Afelix</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #60a5fa;
+        }
+
+        .stat-number.completed { color: #34d399; }
+        .stat-number.remaining { color: #fbbf24; }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .progress-bar-container {
+            max-width: 500px;
+            margin: 30px auto 0;
+            background: #1e293b;
+            border-radius: 12px;
+            height: 14px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #34d399, #60a5fa, #a78bfa);
+            transition: width 1.5s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+        }
+
+        .level-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 24px 28px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .level-card:hover {
+            border-color: #475569;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .level-card.completed { border-left: 4px solid #34d399; }
+        .level-card.pending { border-left: 4px solid #fbbf24; opacity: 0.7; }
+
+        .level-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .level-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .level-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .completed .level-badge {
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+        }
+
+        .pending .level-badge {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+        }
+
+        .level-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .level-status {
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .completed .level-status {
+            background: rgba(52, 211, 153, 0.12);
+            color: #34d399;
+        }
+
+        .pending .level-status {
+            background: rgba(251, 191, 36, 0.12);
+            color: #fbbf24;
+        }
+
+        .level-desc {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-top: 8px;
+            padding-left: 44px;
+        }
+
+        .level-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            padding-left: 44px;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 6px;
+            background: rgba(96, 165, 250, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 40px 0 20px;
+            padding-left: 4px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #475569;
+            font-size: 0.8rem;
+            border-top: 1px solid #1e293b;
+        }
+
+        .footer a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.6rem; }
+            .stats { gap: 24px; }
+            .stat-number { font-size: 2rem; }
+            .level-card { padding: 18px 20px; }
+            .level-desc, .level-tags { padding-left: 0; margin-top: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Claude Code AI 能力学习进度</h1>
+    <p>Afelix @ ShowZ Store | 开始时间：2026-03-31</p>
+    <div class="stats">
+        <div class="stat-item">
+            <div class="stat-number">15</div>
+            <div class="stat-label">总能力数</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number completed">13</div>
+            <div class="stat-label">已掌握</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number remaining">2</div>
+            <div class="stat-label">待学习</div>
+        </div>
+    </div>
+    <div class="progress-bar-container">
+        <div class="progress-bar-fill" style="width: 87%;"></div>
+    </div>
+    <div class="progress-text">总进度 87% (13/15)</div>
+</div>
+
+<div class="container">
+
+    <div class="section-title">基础操作</div>
+
+    <div class="level-card completed">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">1</span>
+                <span class="level-name">跳过权限确认的启动方式</span>
+            </div>
+            <span class="level-status">已掌握</span>
+        </div>
+        <div class="level-desc">三种方式：启动参数 --dangerously-skip-permissions、别名 cc、进入后 Shift+Tab 切换。</div>
+        <div class="level-tags"><span class="tag">CLI</span><span class="tag">别名配置</span></div>
+    </div>
+
+    <div class="level-card completed">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">2</span>
+                <span class="level-name">保存 session 进度，下次能接上</span>
+            </div>
+            <span class="level-status">已掌握</span>
+        </div>
+        <div class="level-desc">三种方式结合：MEMORY 放索引、MD 文件放详细内容、-c/-r 短期续聊。</div>
+        <div class="level-tags"><span class="tag">MEMORY</span><span class="tag">-c 续聊</span><span class="tag">MD 文件</span></div>
+    </div>
+
+    <div class="level-card completed">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">3</span>
+                <span class="level-name">会切换模型</span>
+            </div>
+            <span class="level-status">已掌握</span>
+        </div>
+        <div class="level-desc">Opus（最强）、Sonnet（性价比）、Haiku（最快）三档按需切换，/model 或 /fast 切换。</div>
+        <div class="level-tags"><span class="tag">Opus 4.6</span><span class="tag">Sonnet 4.6</span><span class="tag">Haiku 4.5</span></div>
+    </div>
+
+    <div class="level-card completed">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">4</span>
+                <span class="level-name">会用 caffeinate -d 防止息屏</span>
+            </div>
+            <span class="level-status">已掌握</span>
+        </div>
+        <div class="level-desc">macOS 自带工具，caffeinate -di 防止息屏+休眠，长任务必备。</div>
+        <div class="level-tags"><span class="tag">macOS</span><span class="tag">caffeinate</span></div>
+    </div>
+
+    <div class="level-card completed">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">5</span>
+                <span class="level-name">会看用量和花费</span>
+            </div>
+            <span class="level-status">已掌握</span>
+        </div>
+        <div class="level-desc">当前使用 Max 订阅制，/cost 查看模式，简单任务切模型省配额。</div>
+        <div class="level-tags"><span class="tag">Max 订阅</span><span class="tag">/cost</span></div>
+    </div>
+
+    <div class="section-title">日常应用</div>
+
+    <div class="level-card completed">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">6</span>
+                <span class="level-name">用 CC 做私人秘书</span>
+            </div>
+            <span class="level-status">已掌握</span>
+        </div>
+        <div class="level-desc">信息查询、写文案/邮件、翻译、整理笔记、计算换算。实战：读取 Google Sheets 每日流程表。</div>
+        <div class="level-tags"><span class="tag">搜索</span><span class="tag">翻译</span><span class="tag">文案</span><span class="tag">Google Sheets</span></div>
+    </div>
+
+    <div class="level-card completed">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">7</span>
+                <span class="level-name">用 CC 读取/修改文件和表格</span>
+            </div>
+            <span class="level-status">已掌握</span>
+        </div>
+        <div class="level-desc">支持 Excel、CSV、PDF、图片、代码。实战：读取暗源新品价格表 + 连接数据库查 SKU 上架状态。</div>
+        <div class="level-tags"><span class="tag">Excel</span><span class="tag">PDF</span><span class="tag">CSV</span><span class="tag">数据库查询</span></div>
+    </div>
+
+    <div class="level-card completed">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">8</span>
+                <span class="level-name">截图+文字写成 Skill</span>
+            </div>
+            <span class="level-status">已掌握</span>
+        </div>
+        <div class="level-desc">Skill = Markdown 指令文件，封装重复操作一键执行。已有 joytoy-listing Skill 自动生成文案。</div>
+        <div class="level-tags"><span class="tag">Skill</span><span class="tag">自动化</span><span class="tag">joytoy-listing</span></div>
+    </div>
+
+    <div class="section-title">进阶自动化</div>
+
+    <div class="level-card completed">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">9</span>
+                <span class="level-name">用 CC 批量处理产品内容</span>
+            </div>
+            <span class="level-status">已掌握</span>
+        </div>
+        <div class="level-desc">批量文案生成、翻译、价格计算、上架检查、数据清洗，不逐个手动操作。</div>
+        <div class="level-tags"><span class="tag">批量处理</span><span class="tag">文案生成</span><span class="tag">数据清洗</span></div>
+    </div>
+
+    <div class="level-card completed">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">10</span>
+                <span class="level-name">用 CC 上传/下载 GitHub</span>
+            </div>
+            <span class="level-status">已掌握</span>
+        </div>
+        <div class="level-desc">GitHub 账号 afelixa45，已有 8 个仓库涵盖油猴脚本、自动化工具、网站项目。</div>
+        <div class="level-tags"><span class="tag">GitHub</span><span class="tag">gh CLI</span><span class="tag">版本控制</span></div>
+    </div>
+
+    <div class="level-card completed">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">11</span>
+                <span class="level-name">用 CC 读取数据库查信息</span>
+            </div>
+            <span class="level-status">已掌握</span>
+        </div>
+        <div class="level-desc">PostgreSQL (Supabase) 数据库，showzstore + erp_showz 共 367 张表，用中文描述即可查询。</div>
+        <div class="level-tags"><span class="tag">PostgreSQL</span><span class="tag">Supabase</span><span class="tag">SQL</span></div>
+    </div>
+
+    <div class="level-card completed">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">12</span>
+                <span class="level-name">用 CC 做数据分析和决策支持</span>
+            </div>
+            <span class="level-status">已掌握</span>
+        </div>
+        <div class="level-desc">实战：低库存 + 近3月销量分析 → 自动计算月均销量 → 生成补货数量建议。</div>
+        <div class="level-tags"><span class="tag">数据分析</span><span class="tag">补货建议</span><span class="tag">决策支持</span></div>
+    </div>
+
+    <div class="level-card completed">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">13</span>
+                <span class="level-name">用 CC 调浏览器读取/写入系统</span>
+            </div>
+            <span class="level-status">已掌握</span>
+        </div>
+        <div class="level-desc">油猴脚本（已用）、Playwright 无头浏览器、MCP Browser 三种方式，已有 5 个自动化项目。</div>
+        <div class="level-tags"><span class="tag">Tampermonkey</span><span class="tag">Playwright</span><span class="tag">MCP</span></div>
+    </div>
+
+    <div class="section-title">高级能力</div>
+
+    <div class="level-card pending">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">14</span>
+                <span class="level-name">GitHub 建私人 repo 部署网页</span>
+            </div>
+            <span class="level-status">学习中</span>
+        </div>
+        <div class="level-desc">使用 GitHub Pages 免费部署静态网页，正在通过部署此页面进行实战学习。</div>
+        <div class="level-tags"><span class="tag">GitHub Pages</span><span class="tag">静态部署</span></div>
+    </div>
+
+    <div class="level-card pending">
+        <div class="level-header">
+            <div class="level-title">
+                <span class="level-badge">15</span>
+                <span class="level-name">用 CC 监控和定时任务</span>
+            </div>
+            <span class="level-status">待学习</span>
+        </div>
+        <div class="level-desc">定时执行任务、自动监控、定期报告生成。</div>
+        <div class="level-tags"><span class="tag">Cron</span><span class="tag">监控</span><span class="tag">自动化</span></div>
+    </div>
+
+</div>
+
+<div class="footer">
+    <p>Powered by <a href="https://claude.ai/claude-code" target="_blank">Claude Code</a> | Last updated: 2026-03-31</p>
+</div>
+
+</body>
+</html>
